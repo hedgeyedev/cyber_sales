@@ -1,0 +1,56 @@
+# Generated HTML Reports
+*.html
+
+# Data Files (JSON/CSV from production)
+*.json
+*.csv
+
+# Distribution Packages
+*.zip
+
+# Cache Directory (all generated data)
+cache/
+
+# Distribution Directory
+dist/
+cyber_sales_reports_*/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+
+# Backup Files
+*.bak
+*.old
+*~
+
+# Sinatra / Rack
+Gemfile.lock
+.bundle/
