@@ -25,6 +25,15 @@ fi
 
 CURRENT_MONTH=$(date +%m)
 CURRENT_YEAR=$(date +%Y)
+CURRENT_DAY=$(date +%d)
+
+# Check if we're in Cyber period: November OR December 1st (Cyber Monday)
+IN_CYBER_PERIOD=false
+if [ "$CURRENT_MONTH" = "11" ]; then
+    IN_CYBER_PERIOD=true
+elif [ "$CURRENT_MONTH" = "12" ] && [ "$CURRENT_DAY" = "01" ]; then
+    IN_CYBER_PERIOD=true
+fi
 
 echo "======================================"
 echo "  Cyber November Year Comparison"
@@ -50,9 +59,9 @@ for year in "${YEARS[@]}"; do
         CACHED=true
         YEARS_WITH_DATA+=($year)
 
-        # If it's current month of current year, update it
-        if [ "$year" -eq "$CURRENT_YEAR" ] && [ "$CURRENT_MONTH" = "11" ]; then
-            echo "  → Updating current month data..."
+        # If it's current year during Cyber period, update it
+        if [ "$year" -eq "$CURRENT_YEAR" ] && [ "$IN_CYBER_PERIOD" = true ]; then
+            echo "  → Updating current Cyber period data..."
             ./update_current_month.sh
         fi
     fi
@@ -62,8 +71,8 @@ for year in "${YEARS[@]}"; do
         echo "  → Not cached, fetching from production..."
         if ./analyze_cyber_november.sh $year; then
             # Decide where to store it
-            if [ "$year" -eq "$CURRENT_YEAR" ] && [ "$CURRENT_MONTH" = "11" ]; then
-                # Current November - store in current/
+            if [ "$year" -eq "$CURRENT_YEAR" ] && [ "$IN_CYBER_PERIOD" = true ]; then
+                # Current Cyber period - store in current/
                 mkdir -p "cache/current/$year"
                 mv recurring_payments_$year.* recurring_payment_analysis_$year.html "cache/current/$year/" 2>/dev/null || true
                 echo "  ✓ Stored in cache/current/$year/"

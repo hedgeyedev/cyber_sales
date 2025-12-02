@@ -22,6 +22,15 @@ START_YEAR=${1:-2020}
 END_YEAR=${2:-$(date +%Y)}
 CURRENT_MONTH=$(date +%m)
 CURRENT_YEAR=$(date +%Y)
+CURRENT_DAY=$(date +%d)
+
+# Check if we're in Cyber period: November OR December 1st (Cyber Monday)
+IN_CYBER_PERIOD=false
+if [ "$CURRENT_MONTH" = "11" ]; then
+    IN_CYBER_PERIOD=true
+elif [ "$CURRENT_MONTH" = "12" ] && [ "$CURRENT_DAY" = "01" ]; then
+    IN_CYBER_PERIOD=true
+fi
 
 echo "============================================================"
 echo "Cyber Sales Analysis Refresh"
@@ -38,9 +47,9 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 
 for ((year=$START_YEAR; year<=$END_YEAR; year++)); do
-    # Skip current year if we're in November (it's not historical yet)
-    if [ "$year" -eq "$CURRENT_YEAR" ] && [ "$CURRENT_MONTH" = "11" ]; then
-        echo "→ Skipping $year (current November, will handle separately)"
+    # Skip current year if we're in Cyber period (it's not historical yet)
+    if [ "$year" -eq "$CURRENT_YEAR" ] && [ "$IN_CYBER_PERIOD" = true ]; then
+        echo "→ Skipping $year (current Cyber period, will handle separately)"
         continue
     fi
 
@@ -61,18 +70,18 @@ done
 
 echo ""
 
-# Step 2: Update current month if in November
+# Step 2: Update current month if in Cyber period (November or December 1st)
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "Step 2: Checking Current Month Data"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-if [ "$CURRENT_MONTH" = "11" ] && [ "$CURRENT_YEAR" -ge "$START_YEAR" ] && [ "$CURRENT_YEAR" -le "$END_YEAR" ]; then
-    echo "→ Currently in November $CURRENT_YEAR, updating current month data..."
+if [ "$IN_CYBER_PERIOD" = true ] && [ "$CURRENT_YEAR" -ge "$START_YEAR" ] && [ "$CURRENT_YEAR" -le "$END_YEAR" ]; then
+    echo "→ Currently in Cyber period (Nov-Dec 1) for $CURRENT_YEAR, updating current month data..."
     echo ""
     ./update_current_month.sh
 else
-    echo "ℹ️  Not in November or current year outside range, skipping current month update"
+    echo "ℹ️  Not in Cyber period or current year outside range, skipping current month update"
 fi
 
 echo ""
