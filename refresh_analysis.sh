@@ -24,11 +24,12 @@ CURRENT_MONTH=$(date +%m)
 CURRENT_YEAR=$(date +%Y)
 CURRENT_DAY=$(date +%d)
 
-# Check if we're in Cyber period: November OR December 1st (Cyber Monday)
+# Check if we're in Cyber period: November OR December 1-2 (Cyber Monday + timezone buffer)
+# Note: Dec 2 included to handle timezone differences (pod runs in EST, may be Dec 2 there)
 IN_CYBER_PERIOD=false
 if [ "$CURRENT_MONTH" = "11" ]; then
     IN_CYBER_PERIOD=true
-elif [ "$CURRENT_MONTH" = "12" ] && [ "$CURRENT_DAY" = "01" ]; then
+elif [ "$CURRENT_MONTH" = "12" ] && [ "$CURRENT_DAY" -le "02" ]; then
     IN_CYBER_PERIOD=true
 fi
 

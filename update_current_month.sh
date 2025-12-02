@@ -25,18 +25,28 @@ echo "======================================"
 echo "Current Date: $(date +%Y-%m-%d)"
 echo ""
 
-# Check if we're in November
-if [ "$CURRENT_MONTH" != "11" ]; then
-    echo "⚠️  Not currently in November (month: $CURRENT_MONTH)"
+# Check if we're in Cyber period (November or December 1-2)
+# Note: Dec 2 included to handle timezone differences (pod runs in EST)
+IN_CYBER_PERIOD=false
+if [ "$CURRENT_MONTH" = "11" ]; then
+    IN_CYBER_PERIOD=true
+    PERIOD_DESC="November"
+elif [ "$CURRENT_MONTH" = "12" ] && [ "$CURRENT_DAY" -le "02" ]; then
+    IN_CYBER_PERIOD=true
+    PERIOD_DESC="Cyber Monday (Dec 1-2)"
+fi
+
+if [ "$IN_CYBER_PERIOD" = false ]; then
+    echo "⚠️  Not currently in Cyber period (month: $CURRENT_MONTH, day: $CURRENT_DAY)"
     echo ""
-    echo "If November $CURRENT_YEAR has ended, you should move it to historical:"
+    echo "If Cyber period has ended, you should move $CURRENT_YEAR to historical:"
     echo "  ./move_to_historical.sh $CURRENT_YEAR"
     echo ""
     exit 0
 fi
 
-# We're in November, update current year data
-echo "→ Updating November $CURRENT_YEAR data (Day $CURRENT_DAY of month)..."
+# We're in Cyber period, update current year data
+echo "→ Updating $PERIOD_DESC $CURRENT_YEAR data..."
 echo ""
 
 # Run the analysis script for current year
@@ -75,7 +85,7 @@ if ./analyze_cyber_november.sh $CURRENT_YEAR; then
         revenue=$(grep -o '"total_revenue": [0-9.]*' "$CURRENT_DIR/$CURRENT_YEAR/recurring_payments_$CURRENT_YEAR.json" | cut -d' ' -f2)
 
         echo ""
-        echo "November $CURRENT_YEAR (through day $CURRENT_DAY):"
+        echo "$PERIOD_DESC $CURRENT_YEAR:"
         echo "  Payments: $payments"
         echo "  Revenue: \$$revenue"
         echo "  File size: $size"
