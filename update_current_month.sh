@@ -25,15 +25,15 @@ echo "======================================"
 echo "Current Date: $(date +%Y-%m-%d)"
 echo ""
 
-# Check if we're in Cyber period (November or December 1-2)
-# Note: Dec 2 included to handle timezone differences (pod runs in EST)
+# Check if we're in Cyber period (November or December 1-6)
+# Cyber Week runs through Friday Dec 5, plus buffer for timezone differences
 IN_CYBER_PERIOD=false
 if [ "$CURRENT_MONTH" = "11" ]; then
     IN_CYBER_PERIOD=true
-    PERIOD_DESC="November"
-elif [ "$CURRENT_MONTH" = "12" ] && [ "$CURRENT_DAY" -le "02" ]; then
+    PERIOD_DESC="November (Cyber Month)"
+elif [ "$CURRENT_MONTH" = "12" ] && [ "$CURRENT_DAY" -le "06" ]; then
     IN_CYBER_PERIOD=true
-    PERIOD_DESC="Cyber Monday (Dec 1-2)"
+    PERIOD_DESC="Cyber Week (Dec 1-5)"
 fi
 
 if [ "$IN_CYBER_PERIOD" = false ]; then

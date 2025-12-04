@@ -9,12 +9,12 @@ class RecurringPaymentAnalyzer
   end
 
   def collect_data
-    # Calculate end date (end of November of the same year)
-    # If we're in early December, extend to Dec 2 to include all of Cyber Monday
+    # Calculate end date (end of November + Cyber Week)
+    # Cyber Week runs through Friday Dec 5, so extend through Dec 6
     today = Date.today
-    if today.month == 12 && today.day <= 2 && today.year == @start_date.year
-      end_date = Date.new(@start_date.year, 12, 2) # Include all of December 1st
-      puts "NOTE: Including December 1st (Cyber Monday) in analysis"
+    if today.month == 12 && today.day <= 6 && today.year == @start_date.year
+      end_date = Date.new(@start_date.year, 12, 6) # Include all of Cyber Week (through Dec 5)
+      puts "NOTE: Including Cyber Week (through December 5th) in analysis"
     else
       end_date = Date.new(@start_date.year, 12, 1) # Standard: through Nov 30
     end
