@@ -65,6 +65,21 @@ if [ $report_count -eq 0 ]; then
     exit 1
 fi
 
+# Copy documentation files
+echo "Copying documentation..."
+mkdir -p "$PACKAGE_DIR/docs"
+doc_count=0
+if [ -f "docs/RECURRING_PAYMENT_ANALYSIS_README.md" ]; then
+    cp "docs/RECURRING_PAYMENT_ANALYSIS_README.md" "$PACKAGE_DIR/docs/"
+    echo "  ✓ RECURRING_PAYMENT_ANALYSIS_README.md"
+    ((doc_count++))
+fi
+if [ -f "docs/YEAR_COMPARISON_README.md" ]; then
+    cp "docs/YEAR_COMPARISON_README.md" "$PACKAGE_DIR/docs/"
+    echo "  ✓ YEAR_COMPARISON_README.md"
+    ((doc_count++))
+fi
+
 # Create a README for users
 echo "Creating README..."
 cat > "$PACKAGE_DIR/README.txt" << 'EOF'
@@ -92,6 +107,10 @@ YEAR DETAIL REPORTS (6):
 TIME-OF-DAY ANALYSIS (6):
 • 2020-2025 Hourly Payment Analysis - Hour-by-hour breakdown with interactive charts
   Shows when payments occur throughout the day, peak hours, and processing patterns
+
+DOCUMENTATION:
+• docs/RECURRING_PAYMENT_ANALYSIS_README.md - How to read time-of-day reports
+• docs/YEAR_COMPARISON_README.md - Understanding comparison methodology
 
 FEATURES:
 ---------
@@ -148,6 +167,7 @@ echo "📊 Comparison Reports: $comparison_count"
 echo "📊 Year Detail Reports: $year_count"
 echo "📊 Time-of-Day Analysis: $time_count"
 echo "📊 Total Reports: $report_count"
+echo "📚 Documentation: $doc_count files"
 echo "📏 Size: $(du -h "$OUTPUT_ZIP" | cut -f1)"
 echo ""
 echo "DISTRIBUTION OPTIONS:"
