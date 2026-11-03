@@ -16,8 +16,8 @@ def build(src, dst, as_of):
     html = Path(src).read_text()
     chart_js = (HERE / "vendor" / "chart.umd.js").read_text()
     html, n = CDN_TAG.subn(lambda _: "<script>" + chart_js + "</script>", html)
-    if n == 0:
-        print("note: no Chart.js CDN tag in " + str(src))
+    if re.search(r'<script[^>]+src="https?:', html):
+        sys.exit("external script still referenced in " + str(src) + " (SharePoint would block it)")
     banner = ('<div style="background:#2c5aa0;color:#fff;padding:8px 16px;font:14px sans-serif">'
               f'<strong>Data as of {as_of}</strong> &middot; refreshed automatically; '
               'reload for the latest.</div>')
