@@ -254,7 +254,24 @@ All reports use consistent color scheme:
 
 Edit CSS in generator scripts to change styling.
 
-## 📦 Distribution
+## 🚀 Nightly SharePoint publishing (2026 onward)
+
+Replaces the daily zip + email. One folder in SharePoint, same file names overwritten every night, so readers keep one link:
+`hedgeye.sharepoint.com/sites/operations2` > `General/File Transfer/Cyber/Cyber <year>` (`index.html`, `Cyber-<year>-vs-prior-years.html`, `Year-<year>-SKU-detail.html`, `Hourly-<year>.html`). SharePoint renders these (Chart.js is inlined, no CDN).
+
+```bash
+./publish_cyber_report.sh                       # DRY_RUN=1 default: fetch + build into dist_single/, no upload
+DRY_RUN=0 ./publish_cyber_report.sh             # also upload to SharePoint
+SKIP_FETCH=1 DRY_RUN=0 ./publish_cyber_report.sh  # reuse cache/, no production access
+```
+
+- **Schedule:** `launchd/com.hedgeye.cyber-sales-report.plist`, daily 02:45 local (Mac on PST = 5:45 AM ET). Install: copy to `~/Library/LaunchAgents/` and `launchctl load` it. Logs: `~/Library/Logs/cyber-sales-report.log`. A failure shows a macOS notification naming the step; readers see the last good copy, and every page carries a "Data as of" banner.
+- **Data:** one read-only `kubectl exec` into production admin-web per run (`analyze_cyber_november.sh`), recurring payments only. `plan_pricing_analysis.rb` / `analyze_plan_pricings.sh` pull plan pricing config for classification checks.
+- **Cyber 2026 classification** (`recurring_payment_analysis.rb`): SKU contains `CY26`/`CYBER26` (also `cyber_YYYY` for earlier years); `cyber_202603` (March flash sale) is not Cyber; `MNG-SUBS-COMP-UPG` is Cyber (comp conversion), `MNG-SUBS-INT-UPG` is not (monthly to annual, runs all year). Per Matt, 2026-11-03.
+- **Index** (`build_index.py`) compares through the last complete day, so a 6 AM run never compares a partial day to full prior-year days.
+- Active Nov 1 to Dec 9; `launchctl unload` it afterward.
+
+## 📦 Distribution (legacy zip)
 
 ### For SharePoint
 1. Upload `cyber_sales_reports_YYYYMMDD.zip`
