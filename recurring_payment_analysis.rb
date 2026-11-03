@@ -83,9 +83,9 @@ class RecurringPaymentAnalyzer
           # Treat CYyy / CYBERyy as cyber_20yy. cyber_202603 (March flash sale, 6 digits) is NOT November Cyber.
           short_year = sku_lower[/(?:^|[_-])cy(?:ber)?(\d{2})(?:_|-|$)/, 1]
           sku_cyber_year = sku_lower[/cyber_(\d{4})(?!\d)/, 1] || (short_year && "20#{short_year}")
-          # 2026 Cyber upgrade pricings that started Nov 1 / Oct 29 but carry no CY26 marker (Forrest, 2026-11-03,
-          # until Matt says otherwise).
-          sku_cyber_year ||= '2026' if sku_lower.match?(/mng-subs-(comp|int)-upg/)
+          # MNG-SUBS-COMP-UPG (comp conversion) is Cyber but carries no CY26 marker (Matt, 2026-11-03).
+          # MNG-SUBS-INT-UPG (monthly to annual, 25% off) runs 24/7/365: NOT Cyber.
+          sku_cyber_year ||= '2026' if sku_lower.include?('mng-subs-comp-upg')
 
           if sku_cyber_year == cyber_year.to_s
             data[:payment_category] = "cyber_#{cyber_year}"
