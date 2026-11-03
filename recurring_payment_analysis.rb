@@ -79,10 +79,10 @@ class RecurringPaymentAnalyzer
           cyber_year = ENV.fetch('CYBER_YEAR', '2025')
           sku_lower = plan_pricing.sku.to_s.downcase
 
-          # Through 2025 cyber SKUs were named cyber_YYYY; from 2026 they are named ..._CY26_n
-          # (e.g. macro_core_1_CY26_1, elite_pass_MNG-SUBS-CY26_1). Treat CYyy as cyber_20yy.
-          cy_year = sku_lower[/(?:^|[_-])cy(\d{2})(?:_|$)/, 1]
-          sku_cyber_year = sku_lower[/cyber_(\d{4})/, 1] || (cy_year && "20#{cy_year}")
+          # Through 2025 cyber SKUs were named cyber_YYYY; from 2026 they are ..._CY26_n, MNG-SUBS-CY26, UP-CYBER26-*.
+          # Treat CYyy / CYBERyy as cyber_20yy. cyber_202603 (March flash sale, 6 digits) is NOT November Cyber.
+          short_year = sku_lower[/(?:^|[_-])cy(?:ber)?(\d{2})(?:_|-|$)/, 1]
+          sku_cyber_year = sku_lower[/cyber_(\d{4})(?!\d)/, 1] || (short_year && "20#{short_year}")
 
           if sku_cyber_year == cyber_year.to_s
             data[:payment_category] = "cyber_#{cyber_year}"
