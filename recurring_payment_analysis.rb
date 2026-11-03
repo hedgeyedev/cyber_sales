@@ -85,7 +85,7 @@ class RecurringPaymentAnalyzer
           sku_cyber_year = sku_lower[/cyber_(\d{4})(?!\d)/, 1] || (short_year && "20#{short_year}")
           # MNG-SUBS-COMP-UPG (comp conversion) is Cyber but carries no CY26 marker (Matt, 2026-11-03).
           # MNG-SUBS-INT-UPG (monthly to annual, 25% off) runs 24/7/365: NOT Cyber.
-          sku_cyber_year ||= '2026' if sku_lower.include?('mng-subs-comp-upg')
+          sku_cyber_year ||= cyber_year.to_s if sku_lower.include?('mng-subs-comp-upg')
 
           if sku_cyber_year == cyber_year.to_s
             data[:payment_category] = "cyber_#{cyber_year}"

@@ -313,10 +313,6 @@ def generate_html(data, output_file='recurring_payment_analysis_output.html'):
     html = html.replace('- Cyber 2025', f'- Cyber {cyber_year}')
 
     # Update JavaScript variable names and keys to use the dynamic year
-    html = html.replace('cyber_2025_count', f'cyber_{cyber_year}_count')
-    html = html.replace('cyber_2025_revenue', f'cyber_{cyber_year}_revenue')
-    html = html.replace('cyber_2025_pct', f'cyber_{cyber_year}_pct')
-    html = html.replace('cyber_2025_revenue_pct', f'cyber_{cyber_year}_revenue_pct')
     # Daily table reads d.cyber_2025 / totalCyber2025 etc.; rename any remaining key BEFORE data is inserted
     html = html.replace('cyber_2025', f'cyber_{cyber_year}')
 

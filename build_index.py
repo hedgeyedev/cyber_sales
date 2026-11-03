@@ -4,19 +4,24 @@ cumulative revenue curves (Chart.js inlined). Aggregates only; reads cache/*/YEA
 
 Usage: python3 build_index.py OUT.html [YEAR]
 """
-import json, sys
+import json
+import sys
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
 
 HERE = Path(__file__).parent
+FIRST_YEAR = 2020
+NOV_DAYS = 30
+COLORS = ["#9aa5b1", "#8fb4e3", "#6c8ebf", "#f2a65a", "#7fc8a9", "#d98880", "#2c5aa0"]
 
 
 def load(year):
     for kind in ("current", "historical"):
         f = HERE / "cache" / kind / str(year) / f"recurring_payments_{year}.json"
         if f.exists():
-            return json.load(open(f))
+            with open(f) as fh:
+                return json.load(fh)
     return None
 
 
@@ -52,13 +57,12 @@ def pct(a, b):
 
 
 def build(out, year):
-    years = [y for y in range(2020, year + 1) if load(y)]
+    years = [y for y in range(FIRST_YEAR, year + 1) if load(y)]
     D = {y: daily(load(y), y) for y in years}
     cur = load(year)
     gen = datetime.fromisoformat(cur["generated_at"])
-    last_day = max(1, gen.day - 1) if gen.month == 11 else 30  # last COMPLETE day: today is partial at 6 AM
+    last_day = max(1, gen.day - 1) if gen.month == 11 else NOV_DAYS  # last COMPLETE day: today is partial at 6 AM
     as_of = gen.strftime("%b %-d, %Y %-I:%M %p ET")
-    prior = [y for y in years if y != year]
     rows = []
     for y in reversed(years):
         c = [sum(D[y][d][i] for d in range(1, last_day + 1) if d in D[y]) for i in range(4)]
@@ -75,14 +79,13 @@ def build(out, year):
         trs += (f"<tr{b}><td>{y}</td><td>{cell(c[0])}</td><td>{cell(c[1], True)}</td>"
                 f"<td>{cell(c[2])}</td><td>{cell(c[3], True)}</td>"
                 f"<td>{pct(cy[3], c[3]) if y != year else ''}</td></tr>")
-    colors = ["#9aa5b1", "#8fb4e3", "#6c8ebf", "#f2a65a", "#7fc8a9", "#d98880", "#2c5aa0"]
     ds_total, ds_cyber = [], []
     for i, y in enumerate(years):
-        n = last_day if y == year else 30
+        n = last_day if y == year else NOV_DAYS
         for lst, idx in ((ds_total, 1), (ds_cyber, 3)):
-            lst.append({"label": str(y), "data": cum(D[y], idx, n), "borderColor": colors[i % 7],
+            lst.append({"label": str(y), "data": cum(D[y], idx, n), "borderColor": COLORS[i % len(COLORS)],
                         "borderWidth": 4 if y == year else 1.5, "pointRadius": 0, "tension": 0.2})
-    labels = list(range(1, 31))
+    labels = list(range(1, NOV_DAYS + 1))
     chart_js = (HERE / "vendor" / "chart.umd.js").read_text()
     delta = f"{pct(cy[3], p1[3])} vs {year-1}" if p1 else ""
     html = f"""<!doctype html><html><head><meta charset="utf-8"><title>Cyber {year} Sales Reports</title>
