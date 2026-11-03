@@ -317,6 +317,8 @@ def generate_html(data, output_file='recurring_payment_analysis_output.html'):
     html = html.replace('cyber_2025_revenue', f'cyber_{cyber_year}_revenue')
     html = html.replace('cyber_2025_pct', f'cyber_{cyber_year}_pct')
     html = html.replace('cyber_2025_revenue_pct', f'cyber_{cyber_year}_revenue_pct')
+    # Daily table reads d.cyber_2025 / totalCyber2025 etc.; rename any remaining key BEFORE data is inserted
+    html = html.replace('cyber_2025', f'cyber_{cyber_year}')
 
     # Replace data placeholders
     html = html.replace('const dailyData = [', f'const dailyData = {json.dumps(daily_data, indent=12)}; const _dailyData_old = [')
