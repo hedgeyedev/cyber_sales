@@ -17,7 +17,7 @@ def build(src, dst, as_of):
     chart_js = (HERE / "vendor" / "chart.umd.js").read_text()
     html, n = CDN_TAG.subn(lambda _: "<script>" + chart_js + "</script>", html)
     if n == 0:
-        sys.exit("no Chart.js CDN tag found in " + str(src))
+        print("note: no Chart.js CDN tag in " + str(src))
     banner = ('<div style="background:#2c5aa0;color:#fff;padding:8px 16px;font:14px sans-serif">'
               f'<strong>Data as of {as_of}</strong> &middot; refreshed automatically; '
               'reload for the latest.</div>')
