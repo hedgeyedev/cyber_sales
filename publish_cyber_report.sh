@@ -9,7 +9,11 @@ YEAR=$(date +%Y); FIRST=2020
 SITE="${CYBER_SP_SITE:-hedgeye.sharepoint.com/sites/operations2}"
 FOLDER="${CYBER_SP_FOLDER:-General/File Transfer/Cyber/Cyber $YEAR}"
 LOG=$(mktemp)
-fail() { echo "cyber report refresh FAILED at step: $1. Readers still see the previous copy (stale since last success). Log: $LOG" >&2; exit 1; }
+fail() {
+  echo "cyber report refresh FAILED at step: $1. Readers still see the previous copy (stale since last success). Log: $LOG" >&2
+  osascript -e "display notification \"Failed at: $1. Readers see a stale copy.\" with title \"Cyber report refresh\"" 2>/dev/null || true
+  exit 1
+}
 
 if [ "${SKIP_FETCH:-0}" != "1" ]; then
   # prior year must be historical before this year is current, or refresh_analysis refetches it from production

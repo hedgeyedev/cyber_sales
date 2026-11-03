@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.hedgeye.cyber-sales-report</string>
+  <!-- bash -l so ~/.profile (rvm, kubectl, python3 on PATH) loads. -->
+  <key>ProgramArguments</key><array>
+    <string>/bin/bash</string><string>-lc</string>
+    <string>cd /Users/fkchang/work/cyber_sales &amp;&amp; DRY_RUN=0 ./publish_cyber_report.sh</string>
+  </array>
+  <!-- Local time. Mac is PST (UTC-8); 02:45 PST = 5:45 AM ET. Missed runs (asleep) fire on wake. -->
+  <key>StartCalendarInterval</key><dict><key>Hour</key><integer>2</integer><key>Minute</key><integer>45</integer></dict>
+  <key>StandardErrorPath</key><string>/Users/fkchang/Library/Logs/cyber-sales-report.log</string>
+  <key>StandardOutPath</key><string>/Users/fkchang/Library/Logs/cyber-sales-report.log</string>
+</dict></plist>
