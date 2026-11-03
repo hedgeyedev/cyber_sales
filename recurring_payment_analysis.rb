@@ -11,8 +11,9 @@ class RecurringPaymentAnalyzer
   def collect_data
     # Calculate end date (end of November + Cyber Week)
     # Cyber Week runs through Friday Dec 5, so extend through Dec 6
+    # Extended buffer to allow final reports even after the period ends
     today = Date.today
-    if today.month == 12 && today.day <= 6 && today.year == @start_date.year
+    if today.month == 12 && today.day <= 9 && today.year == @start_date.year
       end_date = Date.new(@start_date.year, 12, 6) # Include all of Cyber Week (through Dec 5)
       puts "NOTE: Including Cyber Week (through December 5th) in analysis"
     else
@@ -78,10 +79,15 @@ class RecurringPaymentAnalyzer
           cyber_year = ENV.fetch('CYBER_YEAR', '2025')
           sku_lower = plan_pricing.sku.to_s.downcase
 
-          if sku_lower.include?("cyber_#{cyber_year}")
+          # Through 2025 cyber SKUs were named cyber_YYYY; from 2026 they are named ..._CY26_n
+          # (e.g. macro_core_1_CY26_1, elite_pass_MNG-SUBS-CY26_1). Treat CYyy as cyber_20yy.
+          cy_year = sku_lower[/(?:^|[_-])cy(\d{2})(?:_|$)/, 1]
+          sku_cyber_year = sku_lower[/cyber_(\d{4})/, 1] || (cy_year && "20#{cy_year}")
+
+          if sku_cyber_year == cyber_year.to_s
             data[:payment_category] = "cyber_#{cyber_year}"
             data[:is_cyber] = true
-          elsif sku_lower.match?(/cyber_\d{4}/)
+          elsif sku_cyber_year
             data[:payment_category] = 'cyber_old'
             data[:is_cyber] = true
           else
