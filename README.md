@@ -265,7 +265,7 @@ DRY_RUN=0 ./publish_cyber_report.sh             # also upload to SharePoint
 SKIP_FETCH=1 DRY_RUN=0 ./publish_cyber_report.sh  # reuse cache/, no production access
 ```
 
-- **Schedule:** `launchd/com.hedgeye.cyber-sales-report.plist`, daily 02:45 local (Mac on PST = 5:45 AM ET). Install: copy to `~/Library/LaunchAgents/` and `launchctl load` it. Logs: `~/Library/Logs/cyber-sales-report.log`. A failure shows a macOS notification naming the step; readers see the last good copy, and every page carries a "Data as of" banner.
+- **Schedule:** `launchd/com.hedgeye.cyber-sales-report.plist`, twice daily, 02:45 and 17:00 local (Mac on PST = 5:45 AM ET and 8 PM ET / COB Pacific). The morning run compares complete days; the evening run includes today and counts every prior year only up to the same hour. Install: copy to `~/Library/LaunchAgents/` and `launchctl load` it. Logs: `~/Library/Logs/cyber-sales-report.log`. A failure shows a macOS notification naming the step; readers see the last good copy, and every page carries a "Data as of" banner.
 - **Data:** one read-only `kubectl exec` into production admin-web per run (`analyze_cyber_november.sh`), recurring payments only. `plan_pricing_analysis.rb` / `analyze_plan_pricings.sh` pull plan pricing config for classification checks.
 - **Cyber 2026 classification** (`recurring_payment_analysis.rb`): SKU contains `CY26`/`CYBER26` (also `cyber_YYYY` for earlier years); `cyber_202603` (March flash sale) is not Cyber; `MNG-SUBS-COMP-UPG` is Cyber (comp conversion), `MNG-SUBS-INT-UPG` is not (monthly to annual, runs all year). Per Matt, 2026-11-03.
 - **Index** (`build_index.py`) compares through the last complete day, so a 6 AM run never compares a partial day to full prior-year days.

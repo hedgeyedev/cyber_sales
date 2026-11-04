@@ -7,8 +7,12 @@
     <string>/bin/bash</string><string>-lc</string>
     <string>cd /Users/fkchang/work/cyber_sales &amp;&amp; DRY_RUN=0 ./publish_cyber_report.sh</string>
   </array>
-  <!-- Local time. Mac is PST (UTC-8); 02:45 PST = 5:45 AM ET. Missed runs (asleep) fire on wake. -->
-  <key>StartCalendarInterval</key><dict><key>Hour</key><integer>2</integer><key>Minute</key><integer>45</integer></dict>
+  <!-- Local time. Mac is PST (UTC-8). 02:45 PST = 5:45 AM ET (complete-days view); 17:00 PST = 8 PM ET (COB Pacific,
+       today-so-far view; ~97% of a day's recurring payments have landed). Missed runs (asleep) fire on wake. -->
+  <key>StartCalendarInterval</key><array>
+    <dict><key>Hour</key><integer>2</integer><key>Minute</key><integer>45</integer></dict>
+    <dict><key>Hour</key><integer>17</integer><key>Minute</key><integer>0</integer></dict>
+  </array>
   <key>StandardErrorPath</key><string>/Users/fkchang/Library/Logs/cyber-sales-report.log</string>
   <key>StandardOutPath</key><string>/Users/fkchang/Library/Logs/cyber-sales-report.log</string>
 </dict></plist>

@@ -56,17 +56,38 @@ def pct(a, b):
     return "n/a" if not b else f"{(a-b)/b*100:+.0f}%"
 
 
+def through(data, year, last_day, hour_cut):
+    """[payments, revenue, cyber_payments, cyber_revenue] for Nov 1..last_day, where last_day counts only hours < hour_cut."""
+    tot = [0, 0.0, 0, 0.0]
+    for p in data["payments"]:
+        if not p["date"].startswith(f"{year}-11-"):
+            continue
+        d = int(p["date"][-2:])
+        if d > last_day or (d == last_day and p["hour"] >= hour_cut):
+            continue
+        tot[0] += 1
+        tot[1] += p["amount"]
+        if p.get("payment_category") == f"cyber_{year}":
+            tot[2] += 1
+            tot[3] += p["amount"]
+    return tot
+
+
 def build(out, year):
-    years = [y for y in range(FIRST_YEAR, year + 1) if load(y)]
-    D = {y: daily(load(y), y) for y in years}
-    cur = load(year)
+    loaded = {y: load(y) for y in range(FIRST_YEAR, year + 1)}
+    loaded = {y: d for y, d in loaded.items() if d}
+    years = list(loaded)
+    D = {y: daily(d, y) for y, d in loaded.items()}
+    cur = loaded[year]
     gen = datetime.fromisoformat(cur["generated_at"])
-    last_day = max(1, gen.day - 1) if gen.month == 11 else NOV_DAYS  # last COMPLETE day: today is partial at 6 AM
+    # Morning run (before noon ET): compare COMPLETE days only. Afternoon/evening run: include today, and count prior
+    # years only up to the same hour so a partial day is never compared with a full one.
+    intraday = gen.month == 11 and gen.hour >= 12
+    last_day = gen.day if intraday else (max(1, gen.day - 1) if gen.month == 11 else NOV_DAYS)
+    hour_cut = gen.hour if intraday else 24
     as_of = gen.strftime("%b %-d, %Y %-I:%M %p ET")
-    rows = []
-    for y in reversed(years):
-        c = [sum(D[y][d][i] for d in range(1, last_day + 1) if d in D[y]) for i in range(4)]
-        rows.append((y, c))
+    span = f"Nov 1 to Nov {last_day}" + (f", with Nov {last_day} counted only through {gen.strftime('%-I %p')} ET in every year" if intraday else ", complete days only")
+    rows = [(y, through(loaded[y], y, last_day, hour_cut)) for y in reversed(years)]
     cy = dict(rows)[year]
     p1 = dict(rows).get(year - 1)
 
@@ -97,16 +118,16 @@ def build(out, year):
 td,th{{padding:8px 12px;border-bottom:1px solid #e3e6ea;text-align:right}} td:first-child,th:first-child{{text-align:left}}
 h2{{margin-top:32px}} .note{{color:#666;font-size:13px}} a{{color:#2c5aa0}} .links li{{margin:6px 0}}
 .chart{{background:#fff;border-radius:8px;padding:12px;margin:12px 0}}</style></head><body>
-<div class="bar"><strong>Cyber {year} Sales Reports</strong> &middot; Data as of {as_of} &middot; refreshed nightly at 6 AM ET</div>
+<div class="bar"><strong>Cyber {year} Sales Reports</strong> &middot; Data as of {as_of} &middot; refreshed daily at 6 AM and 8 PM ET</div>
 <main>
-<p>How Cyber November {year} is tracking against prior years, same days only (Nov 1 to Nov {last_day}).
+<p>How Cyber November {year} is tracking against prior years, same days only ({span}).
 Figures are <b>recurring payments</b> (renewals and promo-priced subscriptions processed in billing), not total company sales.</p>
 <div class="cards">
 <div class="card"><div class="note">Cyber {year} revenue, Nov 1-{last_day}</div><div class="big">{money(cy[3])}</div><div>{delta}</div></div>
 <div class="card"><div class="note">Cyber {year} payments</div><div class="big">{int(cy[2]):,}</div><div>{pct(cy[2], p1[2]) + f' vs {year-1}' if p1 else ''}</div></div>
 <div class="card"><div class="note">All recurring revenue, Nov 1-{last_day}</div><div class="big">{money(cy[1])}</div><div>{pct(cy[1], p1[1]) + f' vs {year-1}' if p1 else ''}</div></div>
 </div>
-<h2>Same days, every year (Nov 1 to Nov {last_day})</h2>
+<h2>Same days, every year ({span})</h2>
 <table><tr><th>Year</th><th>All payments</th><th>All revenue</th><th>Cyber payments</th><th>Cyber revenue</th><th>{year} Cyber vs this year</th></tr>{trs}</table>
 <p class="note">"Cyber" = payments on that year's Cyber SKUs/plan pricings. Last column: how {year} Cyber revenue compares to that year's at the same point.</p>
 <h2>Cumulative Cyber revenue by day of November</h2><div class="chart"><canvas id="c2" height="110"></canvas></div>
