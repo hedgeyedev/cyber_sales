@@ -1,0 +1,81 @@
+# CronJob to refresh cyber sales data daily
+# Runs at 6am EST (11am UTC) every day
+#
+# IMPORTANT: Update these values after Terraform deployment:
+#   - namespace: Get from `terraform output namespace`
+#   - claimName: Get from `terraform output pvc_name`
+#   - image: Your ECR image URL
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: refresh-cyber-reports
+  namespace: cyber-sales  # IMPORTANT: Must match Terraform namespace output
+spec:
+  # Schedule: 6am EST = 11am UTC (adjust for daylight savings if needed)
+  schedule: "0 11 * * *"
+
+  # Keep last 3 successful jobs for debugging
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+
+  jobTemplate:
+    spec:
+      # Don't retry on failure - better to debug and fix
+      backoffLimit: 0
+
+      template:
+        metadata:
+          labels:
+            app: cyber-sales-cronjob
+
+        spec:
+          # Use ServiceAccount with kubectl exec permissions
+          serviceAccountName: cyber-sales-data-fetcher
+
+          restartPolicy: Never
+
+          containers:
+          - name: data-refresh
+            # IMPORTANT: Replace with your ECR image URL
+            image: <ACCOUNT_ID>.dkr.ecr.us-east-1.amazonaws.com/cyber-sales-cronjob:latest
+
+            workingDir: /app
+
+            # Run refresh script with current year
+            command: ["/bin/bash", "-c"]
+            args:
+              - |
+                echo "Starting cyber sales data refresh at $(date)"
+
+                # Refresh all historical years plus current
+                ./refresh_analysis.sh 2020 $(date +%Y)
+
+                echo "Data refresh completed at $(date)"
+                echo "Generated reports:"
+                ls -lh *.html
+
+            # Mount EFS storage (same PVC as web server)
+            volumeMounts:
+            - name: reports-data
+              mountPath: /app
+
+            # Resource limits
+            resources:
+              limits:
+                cpu: "1000m"
+                memory: "1Gi"
+              requests:
+                cpu: "500m"
+                memory: "512Mi"
+
+            # Environment variables if needed
+            env:
+            - name: TZ
+              value: "America/New_York"
+
+          # Define the volume - same PVC as Terraform deployment
+          volumes:
+          - name: reports-data
+            persistentVolumeClaim:
+              claimName: cyber-sales-data  # IMPORTANT: Must match Terraform PVC name (get from terraform output)

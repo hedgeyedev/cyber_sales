@@ -1,0 +1,33 @@
+# Docker image for data refresh cronjob
+# Contains kubectl, Ruby, Python for running refresh_analysis.sh
+# IMPORTANT: Must build for x86 to run on AWS EKS
+FROM --platform=linux/amd64 ruby:3.2-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    build-essential \
+    python3 \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install kubectl
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+    chmod +x kubectl && \
+    mv kubectl /usr/local/bin/
+
+# Set working directory
+WORKDIR /app
+
+# Copy Gemfile and install Ruby dependencies
+COPY Gemfile Gemfile.lock* ./
+RUN bundle install
+
+# Copy all scripts and code
+COPY . .
+
+# Make scripts executable
+RUN chmod +x *.sh *.rb *.py
+
+# Default command - can be overridden in CronJob
+CMD ["./refresh_analysis.sh", "2025"]
